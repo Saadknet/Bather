@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تقرير حاسبة البذر</title>
+    <style>
+        :root {
+            --primary-color: #2e7d32;
+            --secondary-color: #455a64;
+            --bg-color: #f4f7f6;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--primary-color);
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: var(--secondary-color);
+            font-size: 0.9rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* إطار النتيجة المربع */
+        #reportCard {
+            margin-top: 25px;
+            padding: 20px;
+            border: 2px solid var(--primary-color);
+            border-radius: 10px;
+            background-color: #fff;
+            display: none;
+        }
+
+        .report-header {
+            text-align: center;
+            background: var(--primary-color);
+            color: white;
+            margin: -20px -20px 15px -20px;
+            padding: 10px;
+            border-radius: 8px 8px 0 0;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        td {
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95rem;
+        }
+
+        .label-td {
+            color: #666;
+            width: 50%;
+        }
+
+        .value-td {
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .final-result-row {
+            text-align: center;
+            padding-top: 15px;
+            border-top: 2px solid #2e7d32;
+        }
+
+        .final-value {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            font-weight: 900;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>مدخلات بيانات البذر</h2>
+    
+    <div class="input-group">
+        <label>اسم المزرعة</label>
+        <input type="text" id="farmName" placeholder="أدخل اسم المزرعة">
+    </div>
+
+    <div class="input-group">
+        <label>مساحة الرشاش (هكتار)</label>
+        <input type="number" id="v1" inputmode="decimal">
+    </div>
+
+    <div class="input-group">
+        <label>عدد أكياس البذر</label>
+        <input type="number" id="v2" inputmode="numeric">
+    </div>
+
+    <div class="input-group">
+        <label>وزن الأكياس (كجم)</label>
+        <input type="number" id="v3" inputmode="decimal">
+    </div>
+
+    <div class="input-group">
+        <label>عدد الأوجه للبذر</label>
+        <input type="number" id="v4" inputmode="numeric">
+    </div>
+
+    <button onclick="generateReport()">إصدار التقرير لوزن البذر</button>
+
+    <!-- إطار النتيجة النهائي -->
+    <div id="reportCard">
+        <div class="report-header">التقرير النهائي للمزرعة</div>
+        <table>
+            <tr>
+                <td class="label-td">اسم المزرعة:</td>
+                <td id="resFarm" class="value-td"></td>
+            </tr>
+            <tr>
+                <td class="label-td">المساحة:</td>
+                <td id="resArea" class="value-td"></td>
+            </tr>
+            <tr>
+                <td class="label-td">عدد الأكياس:</td>
+                <td id="resBags" class="value-td"></td>
+            </tr>
+            <tr>
+                <td class="label-td">وزن الكيس:</td>
+                <td id="resWeight" class="value-td"></td>
+            </tr>
+            <tr>
+                <td class="label-td">عدد الأوجه:</td>
+                <td id="resFaces" class="value-td"></td>
+            </tr>
+        </table>
+        
+        <div class="final-result-row">
+            <span style="font-size: 0.9rem; color: #555;">النتيجة النهائية:</span>
+            <span id="resFinal" class="final-value"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    function generateReport() {
+        const farm = document.getElementById('farmName').value || "غير محدد";
+        const area = parseFloat(document.getElementById('v1').value);
+        const bags = parseFloat(document.getElementById('v2').value);
+        const weight = parseFloat(document.getElementById('v3').value);
+        const faces = parseFloat(document.getElementById('v4').value);
+
+        if (!area || !bags || !weight || !faces) {
+            alert("يرجى إكمال جميع الحقول الرقمية");
+            return;
+        }
+
+        // المعادلة: [ (الأكياس * الوزن) / (المساحة / 100) / الأوجه ] / 10000
+        let resultKg = (((bags * weight) / (area / 100)) / faces) / 10000;
+
+        // تعبئة البيانات في الجدول
+        document.getElementById('resFarm').innerText = farm;
+        document.getElementById('resArea').innerText = area + " هكتار";
+        document.getElementById('resBags').innerText = bags + " كيس";
+        document.getElementById('resWeight').innerText = weight + " كجم";
+        document.getElementById('resFaces').innerText = faces;
+
+        // معالجة وحدة القياس (جرام أو كجم)
+        let finalDisplay = "";
+        if (resultKg < 1) {
+            finalDisplay = (resultKg * 1000).toFixed(2) + " جرام";
+        } else {
+            finalDisplay = resultKg.toFixed(4) + " كجم";
+        }
+
+        document.getElementById('resFinal').innerText = finalDisplay;
+
+        // إظهار الإطار المربع
+        document.getElementById('reportCard').style.display = 'block';
+
+        // التمرير للأسفل لرؤية النتيجة
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
